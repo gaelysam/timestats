@@ -15,6 +15,17 @@ local function start(self, active)
 	return n
 end
 
+local function get(self, n)
+	local t1 = os.clock()
+	n = n or #self
+	local t0 = self[n]
+	if t0 > 0 then
+		return t1 - t0 -- Counter is active so time is the diff between t0 and t1
+	else
+		return -t0 -- If counter is inactive, t0 is the negative time delta
+	end
+end
+
 local function pause(self, n)
 	local t1 = os.clock()
 	n = n or #self
@@ -34,15 +45,8 @@ local function resume(self, n)
 end
 
 local function stop(self, n)
-	local t3 = os.clock()
 	n = n or #self
-	local t0 = self[n]
-	local time
-	if t0 > 0 then -- Counter was active so time is the diff between t0 and t3
-		time = t3 - t0
-	else
-		time = -t0 -- If counter was inactive, t0 is the negative time delta
-	end
+	local time = get(self, n)
 	self.calls = self.calls + 1
 	self.sum = self.sum + time
 	self.sum2 = self.sum2 + time^2
@@ -52,6 +56,8 @@ local function stop(self, n)
 	if self.autoprint then
 		print("[timestats] " .. self.name .. ": " .. displaytime(time))
 	end
+
+	return time
 end
 
 local function step(self, n)
